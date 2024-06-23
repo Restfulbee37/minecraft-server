@@ -2,7 +2,7 @@ services:
   minecraft-server:
     image: itzg/minecraft-server:latest
     ports:
-      - "6969:6969" # Change this to whatever you like
+      - "44323:44323" # Change this to whatever you like
     environment:
       EULA: "TRUE"
       MODE: "survival"
@@ -12,14 +12,14 @@ services:
       HARDCORE: false
       VIEW_DISTANCE: "24"
       SIMULATION_DISTANCE: "24"
-      SERVER_PORT: 6969
+      SERVER_PORT: 44323
       MAX_MEMORY: '2750m'
       LEVEL: 'main_world'
       INIT_MEMORY: '1g'
       MOTD: "ITS GAMING WEEK"
       OPS: "Restfulbee37"
       ENABLE_QUERY: true
-      RCON_PORT: 9696
+      RCON_PORT: 44324
       RCON_PASSWORD: "password" # This is an internal port so won't be accessed by external internet
       SERVER_NAME: "MC-FABRIC-SERVER"
       OP_PERMISSION_LEVEL: 4
@@ -39,15 +39,15 @@ services:
      context: ./backup
      dockerfile: ./Dockerfile
     environment:
-      BACKUP_INTERVAL: 1m
+      BACKUP_INTERVAL: 30m
       BACKUP_METHOD: "tar"
       BACKUP_NAME: "FABRIC-SERVER-BAK"
-      INITIAL_DELAY: 2m
+      INITIAL_DELAY: 5m
       RCON_HOST: minecraft-server-minecraft-server-1
-      RCON_PORT: 9696
+      RCON_PORT: 44324
       RCON_PASSWORD: "password"
       PRUNE_BACKUP_DAYS: 3
-      SERVER_PORT: 6969
+      SERVER_PORT: 44323
       DEST_DIR: "/backups"
       SRC_DIR: "/data"
       PLUGIN_DIR: "/plugins"
