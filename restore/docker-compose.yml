@@ -1,0 +1,22 @@
+services:
+  restore-mc:
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    environment:
+      BACKUP_DIR: /backups
+      DATA_DIR: /data
+      PLUGIN_DIR: /plugins
+      world_list: /world.txt
+      tmp_dir: /tmp_store
+    volumes:
+      - ../minecraft-data:/data
+      - ../minecraft-data-backups:/backups
+      - ../world-list.txt:/world.txt
+      - ../plugins:/plugins
+
+volumes:
+  minecraft-data: {}
+  minecraft-data-backups: {}
+  world-list: {}
+  plugins: {}

@@ -1,0 +1,67 @@
+services:
+  minecraft-server:
+    image: itzg/minecraft-server:latest
+    ports:
+      - "6969:6969" # Change this to whatever you like
+    environment:
+      EULA: "TRUE"
+      MODE: "survival"
+      VERSION: "latest"
+      DIFFICULTY: "hard"
+      TYPE: "FABRIC"
+      HARDCORE: false
+      VIEW_DISTANCE: "24"
+      SIMULATION_DISTANCE: "24"
+      SERVER_PORT: 6969
+      MAX_MEMORY: '2750m'
+      LEVEL: 'main_world'
+      INIT_MEMORY: '1g'
+      MOTD: "ITS GAMING WEEK"
+      OPS: "Restfulbee37"
+      ENABLE_QUERY: true
+      RCON_PORT: 9696
+      RCON_PASSWORD: "password" # This is an internal port so won't be accessed by external internet
+      SERVER_NAME: "MC-FABRIC-SERVER"
+      OP_PERMISSION_LEVEL: 4
+      BROADCAST_RCON_TO_OPS: true
+      BROADCAST_CONSOLE_TO_OPS: true
+    stdin_open: true
+    tty: true
+    restart: on-failure:5
+    volumes:
+      # attach a directory relative to the directory containing this compose file
+      - ./minecraft-data:/data
+      #- ./plugins:/data/plugins # Uncomment if plugins are used
+      - ./mods:/mods
+
+  backup-mc:
+    build:
+     context: ./backup
+     dockerfile: ./Dockerfile
+    environment:
+      BACKUP_INTERVAL: 1m
+      BACKUP_METHOD: "tar"
+      BACKUP_NAME: "FABRIC-SERVER-BAK"
+      INITIAL_DELAY: 2m
+      RCON_HOST: minecraft-server-minecraft-server-1
+      RCON_PORT: 9696
+      RCON_PASSWORD: "password"
+      PRUNE_BACKUP_DAYS: 3
+      SERVER_PORT: 6969
+      DEST_DIR: "/backups"
+      SRC_DIR: "/data"
+      PLUGIN_DIR: "/plugins"
+    depends_on:
+      minecraft-server:
+        condition: service_healthy
+    volumes:
+     - ./minecraft-data:/data
+     - ./minecraft-data-backups:/backups
+     #- ~/docker-server/minecraft-paper/plugins:/plugins
+     - ./mods:/mods
+volumes:
+    minecraft-data: {}
+    minecraft-data-backups: {}
+    #plugins: {}
+    mods: {}
+

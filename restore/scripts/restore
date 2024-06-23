@@ -1,0 +1,89 @@
+#!/bin/bash
+
+echo "Initiating Restore Container"
+echo "Exit codes:"
+echo "exit 0: Restore was completed successfully"
+echo "INFO 3: No backup files were found"
+echo "INFO 2: No backup or world files were found - A new world will be created"
+echo "exit 1: Restore failed"
+echo "exit (anything else): Unkown error"
+
+# Define vars
+backup_dir="${BACKUP_DIR:-/backups}"
+data_dir="${DATA_DIR:-/data}"
+plugin_dir="${PLUGIN_DIR:-/plugins}"
+world_list="${world_list:-'worlds.txt'}"
+tmp_dir="${tmp_dir:-/tmp_store}"
+
+#backup_dir="minecraft-data-backups"
+#data_dir="minecraft-data"
+#tmp_dir="tmp_store"
+
+# Find latest file name
+latest_backup_file=$(ls -t $backup_dir | head -n1)
+latest_data_file=$(ls -t $data_dir | head -n1)
+# Retrieve list of world names and add to array
+worlds=()
+while IFS= read -r line; do
+    worlds+=("$line")
+done < "$world_list"
+
+
+#Check if paths are empty
+if [[ -z "$latest_backup_file" && -z "$latest_data_file" ]]; then
+	echo "INFO 2"
+	exit 0
+elif [[ -z "$latest_backup_file" ]]; then
+	echo "INFO 3"
+	exit 0
+fi
+
+#Check world files exists and if not create it
+#folder="HUB"
+#if [ ! -d "$DATA_DIR"/"$folder" ]; then
+#    echo "Creating folder: "$DATA_DIR"/"$folder""
+#    mkdir "$DATA_DIR"/"$folder"
+#fi
+
+#Copy file to temporary dir and extract
+cp $backup_dir/$latest_backup_file $tmp_dir
+tar -xvzf $tmp_dir/$latest_backup_file -C $tmp_dir > /dev/null
+echo "Restoring "$latest_backup_file"!"
+rm $tmp_dir/$latest_backup_file
+
+
+#Check world data exists for each world
+for element in "${worlds[@]}"; do
+	if [ ! "$(ls -A "$tmp_dir/mc-bk/$element")" ]; then
+		exit 1
+	fi
+
+	if [ ! "$(ls -A "$tmp_dir")" ]; then
+		exit 1
+	fi
+done
+
+
+#Delete all files currently in data
+#Check directory exists
+ for element in "${worlds[@]}"; do
+	if [ -d "$data_dir" ]; then
+		find "$data_dir/$element" -mindepth 1 -delete
+	else
+		exit 1
+	fi
+done
+
+#Copy all data from temp to data dir
+for element in "${worlds[@]}"; do
+	#chown -R 100999:100999 $tmp_dir/data/$element
+	#chmod -R 777 $tmp_dir/data/$element
+	cp -R $tmp_dir/mc-bk/$element/* $data_dir/$element/
+	chmod -R 777 $DATA_DIR/$element
+	echo "Copying $element"
+done
+
+find "$tmp_dir" -mindepth 1 -delete
+
+echo "Restore Completed Successfully!"
+exit 0
